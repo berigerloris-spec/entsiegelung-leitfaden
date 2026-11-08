@@ -1,0 +1,11 @@
+﻿Lokal eingebundene Bibliotheken (keine CDN-Abhängigkeit, alles läuft auf dem Gerät)
+=====================================================================================
+pdf.min.js, pdf.worker.min.js      pdf.js 3.11.174 (Mozilla), Apache-2.0
+mammoth.browser.min.js             mammoth 1.8.0 (Michael Williamson), BSD-2-Clause
+tesseract/tesseract.min.js         tesseract.js 5.1.1 (Tesseract.js contributors), Apache-2.0
+tesseract/worker.min.js            tesseract.js 5.1.1, Apache-2.0
+tesseract/core/*.wasm.js           tesseract.js-core 5.1.1 (Tesseract-OCR, Google u. a.), Apache-2.0
+tesseract/lang/*.traineddata.gz    Tesseract-Sprachdaten «best» (ganzzahlig quantisiert, 4.0.0_best_int) für
+                                   Deutsch, Englisch, Französisch, Italienisch, Apache-2.0
+Die Texterkennung läuft vollständig im Browser (Web Worker). Es werden keine Dateien, Bilder oder Texte an
+einen externen Dienst gesendet.
