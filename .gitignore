@@ -1,0 +1,9 @@
+# Lokale Testdaten und Betriebssystemdateien bleiben ausserhalb der Veröffentlichung.
+_test/
+Thumbs.db
+.DS_Store
+
+# Lokale Sicherungen und Exportdateien können Originalunterlagen enthalten.
+*.zip
+*.json
+*.bak

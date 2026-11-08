@@ -1,0 +1,234 @@
+Entsiegelung und Regenwasser – Leitfaden-App
+============================================
+
+Gültiger Stand
+--------------
+App-Version lf-v23 vom 8. November 2026 (Offline-Speicher «lf-entsiegelung-lf-v23», Datenformat 3).
+Fachlicher Inhalt: Leitfaden «Entsiegelung und Regenwasser», Fassung vom 4. November 2026,
+Revisionsstand 6 vom 8. November 2026 (Leitfaden_Entsiegelung_Gemeinden_2026-11-04_ueberarbeitet_Rev6.pdf,
+SHA-256 b20ccfc7…). Die Fachlogik (Kennwerte, Gewichte, Schwellen, Entscheidungsbaum, Prüfpunkte) ist
+gegenüber lf-v22 unverändert.
+lf-v23 ergänzt lf-v22 um: Zahnrad-Einstellungen oben rechts, vier Sprachen (Deutsch, English, Français,
+Italiano), Darstellung Hell/Dunkel/System, Projekte mit Ordnern und Dateiablage am linken Rand (Import mit
+automatischer Ablage, Duplikat- und Versionsprüfung, Suche, Papierkorb), Fotoerfassung mit Kameraeingabe
+(Drehen, Zuschneiden), lokale Texterkennung (OCR) für Fotos und Bilder (nur als Hinweis), den lokalen
+DOCX-Leser Mammoth und eine vollständige Sicherung mit Originaldateien.
+Zusätzlich gibt es dieselbe App als Windows-Anwendung (Installationsdatei, Ordner 09_App_Windows;
+siehe Abschnitt «Windows-Anwendung»).
+Veröffentlichung: lf-v23 ist NICHT veröffentlicht. Online ist weiterhin lf-v22.
+
+Sicherungen und Prüfunterlagen (Ordner 05_Uebergabepakete_Archiv):
+  App_Leitfaden_Sicherung_lf-v22_2026-11-08   Ausgangsstand dieser Überarbeitung (veröffentlicht)
+  App_Leitfaden_Pruefung_lf-v23_2026-11-08    Änderungsbericht, Tests, Bilder von lf-v23
+  (ältere Stände lf-v19 bis lf-v21 sind ebenfalls abgelegt)
+
+Was diese Datei ist
+-------------------
+Eine Progressive Web App (PWA). Nach dem Veröffentlichen über HTTPS kann sie im
+Browser wie eine App installiert werden. Sie funktioniert danach offline und
+speichert alles ausschliesslich auf dem jeweiligen Gerät. Nichts wird ins Internet
+übertragen, es gibt keine Cloud-Anbindung und keine Synchronisation zwischen Geräten.
+Die App nicht durch Doppelklick auf index.html testen; Offline-Funktion und
+Installation gibt es nur über HTTPS (oder localhost).
+
+Dateien
+-------
+index.html            Oberfläche, Bedienlogik, Prüfregeln, Stile
+i18n.js               Mehrsprachigkeit: T('deutscher Text'), Wörterbuch-Mechanik, Fachtext-Umschaltung
+lang-en.js, lang-fr.js, lang-it.js    Wörterbücher der Bedienoberfläche (je Sprache gut 1 200 Einträge)
+daten.js              Fachinhalte des Leitfadens (Rev. 6, deutsch, wörtlich; fachliche Referenz)
+daten-en.js, daten-fr.js, daten-it.js  Übersetzungen der Fachtexte (nicht fachlich geprüft, siehe unten)
+projekt.js            Projekte, Ordner, Migration ins Datenformat 3
+ablage.js             Import, automatische Zuordnung, Duplikate/Versionen, Suchindex, Suche, Papierkorb
+seitenleiste.js       Seitenleiste «Dateiablage», Dialoge, Vorschau
+erfassung.js          Foto erfassen (Kameraeingabe, Drehen, Zuschneiden), Texterkennung, Hinweise, Einstellungskarte
+schutz.js             App-Sperre: Verschlüsselung, Sperrbildschirm, Wiederherstellungscode
+sicherung.js          Sicherung (Vollsicherung als ZIP, nur Daten als JSON) und Wiederherstellung
+entscheidungsbaum.png Entscheidungsbaum, Seite 5 des Leitfadens Rev. 6
+manifest.webmanifest  Installationsangaben für Browser
+sw.js                 Offline-Speicher; bei jeder Änderung VERSION und APP_VERSION
+                      gemeinsam erhöhen (aktuell lf-v23, Cache «lf-entsiegelung-lf-v23»)
+lib/pdf*.js           PDF-Leser pdf.js 3.11.174 (Mozilla, Apache-2.0)
+lib/mammoth.browser.min.js   DOCX-Leser Mammoth 1.8.0
+lib/tesseract/        Texterkennung Tesseract.js 5.1.1 mit Kern und Sprachdaten (Deutsch, Englisch, Französisch,
+                      Italienisch), vollständig lokal; Lizenzen in lib/LIZENZEN.txt. Keine Abhängigkeit von einem
+                      Netzwerkdienst (CDN).
+_headers              Steuerdatei für Netlify und Cloudflare (Cache-Regel für sw.js)
+icon*.png, icon.svg   App-Symbole (icon-maskable-512.png für Android-Startbildschirme)
+
+Einstellungen (Zahnrad oben rechts)
+-----------------------------------
+Quadratischer, abgerundeter Knopf in der Kopfzeile, in jeder Ansicht erreichbar (Name und
+Tooltip «Einstellungen», mindestens 44 × 44 px, per Tabulator mit sichtbarem Fokus bedienbar).
+Die Einstellungsansicht gliedert sich in Sprache, Darstellung, Datenschutz (App-Sperre),
+Ablage und Sicherung, Installation. Es gibt je Einstellung genau eine Stelle; die Sprache und
+die Darstellung werden nur dort geführt.
+
+Sprache
+-------
+Deutsch (Schweizer Schreibweise, Voreinstellung), English, Français, Italiano. Die Wahl wirkt sofort, bleibt
+nach Neuladen und Offline-Nutzung erhalten und steht auch auf dem Sperrbildschirm zur Verfügung (die Anzeige-
+einstellungen Sprache und Darstellung sind die einzigen unverschlüsselten Angaben). Eine frühere
+englische Einstellung bleibt Englisch (seit der Einführung der englischen Fassung); andere Daten bleiben
+unberührt.
+- Bedienoberfläche: Wörterbücher lang-en.js, lang-fr.js und lang-it.js. Der deutsche Text ist im Code zugleich
+  der Schlüssel; fehlt ein Eintrag, erscheint der deutsche Text. Neue Texte immer mit T('…') (in Funktionen)
+  bzw. _('…') (Konstanten) schreiben und in alle drei Wörterbücher eintragen.
+- Fachtexte (Prüffragen, Erläuterungen, Massnahmenblätter, Leitfadentexte): daten-en.js, daten-fr.js, daten-it.js.
+  Zahlen, Einheiten, Quellen, Bedingungen, Kennungen und Links stammen aus dem Original und wurden maschinell
+  verglichen. Die Übersetzungen sind maschinell erstellt und NICHT fachlich geprüft. Bei jeder Fachansicht
+  gibt es den Knopf «Deutscher Originaltext» (schreibgeschützte Referenz); neben ihm steht der Hinweis
+  «Übersetzung, nicht fachlich geprüft».
+- Eigene Namen (Projekte, Flächen, Ordner, Dateien) und hochgeladene Dokumente werden nie übersetzt. Bei den
+  Standardordnern (und beim Standardprojekt ohne eigenen Namen) wird nur die Anzeige übersetzt; gespeichert
+  ist die Funktion, nicht der Name.
+
+Darstellung
+-----------
+Hell (Standard), Dunkel, System. «System» folgt dem Gerät und reagiert auch während die App offen ist auf
+einen Wechsel. Akzentfarbe ist das Petrolgrün der Diplomarbeit. Status wird nie nur über die Farbe vermittelt
+(Text und Zeichen). Ausdrucke und PDF-Berichte sind immer hell; Seitenleiste und Kopfzeile werden nicht gedruckt.
+
+Projekte, Flächen und Dateiablage
+---------------------------------
+- Ein Projekt enthält mehrere Untersuchungsflächen und gemeinsame Projektunterlagen. Eine Fläche ist nicht
+  dasselbe wie ein Projekt. Jedes Projekt hat seine eigene Ordnerstruktur, die einmal angelegt wird
+  (Eingang / Zuordnen, Pläne, Dokumentation, Prüfberichte, Fotos, Korrespondenz).
+- Die Seitenleiste links (auf schmalen Bildschirmen über den Knopf «Ablage» als Bereich über dem Inhalt)
+  zeigt das aktive Projekt mit Projektwechsel, Suche, Ablagefläche zum Hineinziehen («Dropbox» bedeutet
+  hier nur diese Fläche, keine Anbindung an einen Dienst), Dateiauswahl, Ordnerbaum mit Dateianzahl und
+  die Dateien des gewählten Ordners.
+- Unterlagen einer Fläche (Bereich «Unterlagen» bei der Fläche) sind die Quellen der Prüfpunkte dieser Fläche.
+  Unterlagen ohne Fläche gehören zum Projekt und werden nicht für Prüfpunkte herangezogen. Eine Datei in
+  «Prüfberichte» erfüllt nie automatisch einen Prüfpunkt. Der Ordner ändert nichts an den Prüfpunkten; erst das
+  Zuordnen oder Lösen von einer Fläche (Dialog «Verwalten») ändert die Quellen und löst die bestehende
+  Regel «erneut prüfen» aus.
+- Ordner: erstellen (auch Unterordner, bis 5 Ebenen), umbenennen, verschieben, Reihenfolge ändern, entfernen.
+  Alles per Menü (Tastatur, Touch); Dateien lassen sich zusätzlich per Ziehen auf einen Ordner verschieben.
+  Der Eingang ist ein fester Auffangbereich (nicht umbenennbar, nicht entfernbar). Beim Entfernen eines
+  gefüllten Ordners werden die Dateien in einen anderen Ordner verschoben oder in den Papierkorb gelegt;
+  Unterordner rücken eine Ebene hoch. Ein entfernter Standardordner wird nie ungefragt neu angelegt.
+- Import: je Datei Fortschritt und Ergebnis. Automatische Zuordnung nach Dateiname, Dateityp und Textanfang;
+  bei unklaren oder widersprüchlichen Hinweisen kommt die Datei in den Eingang. Ausdrückliches Ziehen auf einen
+  Ordner hat Vorrang. Fehlerhafte PDF, leere, zu grosse (über 25 MB) Dateien und Speicherprobleme werden
+  nicht als erfolgreich gemeldet. Das Ziel (Projekt, Fläche) wird beim Start festgehalten; ein Projektwechsel
+  während des Imports ändert nichts daran.
+- Identische Datei (gleicher Inhalt, SHA-256): wird nicht ein zweites Mal abgelegt. Gleicher Name, anderer
+  Inhalt: Entscheidung «als neue Version übernehmen», «zusätzlich behalten» oder «überspringen».
+- Papierkorb: gelöschte Dateien sind wiederherstellbar; vor dem endgültigen Löschen werden die betroffenen
+  Verknüpfungen (Prüfpunkte) angezeigt.
+- Suche (aktives Projekt): Dateiname, Ordner, Fläche, Notiz, Schlagwörter, Dokumentinhalt; Gross-/Kleinschreibung
+  und Akzente (ü = u = ue) egal; Filter nach Ordner und Dateityp; Sortierung; Textausschnitt mit Seite;
+  Klick öffnet die Vorschau (PDF an der Seite). Scan-PDFs sind nur über Metadaten auffindbar (das wird
+  angezeigt); Fotos und Bilder sind über den Text der Texterkennung auffindbar, sobald diese gelaufen ist
+  (Kennzeichnung «per Texterkennung»). Der Suchtext liegt lokal (IndexedDB «texte») und, mit App-Sperre,
+  verschlüsselt. Nichts wird übertragen.
+
+Foto erfassen und Texterkennung
+-------------------------------
+- «Dokument fotografieren» (Seitenleiste, Startseite und Fläche) öffnet auf Smartphones die Kamera
+  (Eingabefeld mit accept="image/*" und capture="environment"). Auf Desktop-Geräten und überall dort, wo der
+  Browser die Kameraübergabe nicht unterstützt, öffnet der Knopf die normale Dateiauswahl; ein Hinweis erklärt
+  das. Es gibt keine eigene Kameravorschau im Browser (keine Berechtigung «Kamera» nötig).
+- Vor dem Speichern: Vorschau, Drehen (links/rechts), Zuschneiden (Ränder wegschneiden), Dateiname und Ziel
+  (Eingang des Projekts oder eine Fläche). Das Ergebnis ist ein JPEG. Es wird bewusst nicht «Scan» genannt: es gibt
+  keine automatische Kantenerkennung und keine Perspektivkorrektur.
+- Texterkennung (Tesseract.js, lokal): läuft für neue Fotos und Bilder im Hintergrund (Einstellungen > Fotos und
+  Texterkennung: ein-/ausschaltbar, Dokumentsprache Deutsch/Englisch/Französisch/Italienisch). Auf Smartphones
+  dauert sie einige Sekunden bis Minuten je Foto. Handschrift und Pläne werden oft nur teilweise erkannt.
+  Der erkannte Text macht das Foto durchsuchbar und liefert bei den passenden Fragen unverbindliche Hinweise
+  (mit Textauszug und Quelle). «Als Hinweis übernehmen» ergänzt nur eine Notiz. Die Texterkennung setzt nie einen
+  Status, eine Zulässigkeit, eine Massnahme oder einen Wert und zählt nicht als Nachweis.
+- Nichts wird an einen Dienst gesendet: Worker, Kern und Sprachdaten liegen in lib/tesseract und im
+  Offline-Speicher (rund 15 MB).
+
+Windows-Anwendung
+-----------------
+Dieselbe App als Installationsdatei für Windows (Ordner 09_App_Windows, Datei dist\Entsiegelung-Leitfaden-
+Setup.exe, Electron und NSIS). Sie enthält die Dateien dieses Ordners und läuft vollständig lokal (Adresse
+app://leitfaden, kein Netzwerkzugriff, kein Service Worker). Daten liegen im Profilordner der Anwendung
+(%APPDATA%\Entsiegelung und Regenwasser) und sind von den Browserdaten getrennt: Sie lassen sich über die
+Sicherung (Einstellungen > Ablage und Sicherung) zwischen Browser und Windows-App übertragen. Einzelheiten
+und Grenzen (nicht signiert, SmartScreen): 09_App_Windows\LIESMICH_WINDOWS.txt.
+
+Sicherung und Wiederherstellung
+-------------------------------
+Einstellungen > Ablage und Sicherung:
+- Vollständig (.zip): Projekte, Flächen, Ordnerstruktur, Zuordnungen, Nachweise, Einstellungen und alle
+  Originaldateien mit Prüfsummen. Ohne Kompression; lässt sich mit jedem ZIP-Programm öffnen.
+  Mit Passwort wird jeder Inhalt einzeln verschlüsselt (AES-256-GCM, PBKDF2-SHA-256, 600 000 Runden).
+- Nur Daten (.json): wie bisher ohne Originaldateien (unverschlüsselt oder mit Passwort).
+- Einlesen: vollständige Prüfung vor jeder Änderung; Wahl zwischen «Zusammenführen» und «Vollständig
+  wiederherstellen» (vorher wird der heutige Stand als Datei angeboten). Ältere Sicherungsdateien (Format 1
+  und 2) lassen sich weiterhin einlesen und werden ins Projektmodell übernommen.
+- Die Ablage liegt nur auf dem Gerät: Wenn die Browserdaten gelöscht werden oder das Gerät defekt ist,
+  sind die Daten weg. Ohne Sicherung gibt es keine zweite Kopie.
+
+App-Sperre (ab lf-v22)
+----------------------
+Einstellungen > Datenschutz > «Schutz mit Passwort einrichten».
+- Flächen, Projekte, Ordner- und Dateinamen, Notizen, Auszüge, Suchtext und die Originalunterlagen werden
+  auf dem Gerät verschlüsselt (AES-256-GCM). Der Schlüssel entsteht aus dem Passwort
+  (PBKDF2-SHA-256, 600 000 Runden); mindestens 12 Zeichen.
+- Es gibt keine Konten und keinen Server. Das Passwort wird nirgends gespeichert und
+  kann nicht zurückgesetzt werden.
+- Bei der Einrichtung erscheint einmalig ein Wiederherstellungscode (160 Bit). Mit ihm
+  lässt sich ein neues Passwort setzen. Ohne Passwort und ohne Code sind die Daten
+  unwiederbringlich verloren (Notausgang: «Alles auf diesem Gerät löschen»).
+- Beim Neuladen und nach der eingestellten Zeit ohne Eingabe (5/15/30/60 Minuten oder nie)
+  sperrt sich die App; dann sind Schlüssel, Daten, Seitenleiste, Suchtreffer, Importliste und Vorschauen
+  aus Arbeitsspeicher und Bildschirm entfernt.
+- Grenzen: Der Schutz gilt für den Browserspeicher dieses Geräts. Er schützt nicht vor
+  Schadsoftware auf dem Gerät. Heruntergeladene Unterlagen, Ausdrucke und Klartext-
+  Sicherungen sind nicht verschlüsselt. Frühere Klartext-Daten können, bis der Browser
+  seinen Speicher bereinigt, noch Spuren auf dem Datenträger hinterlassen. Anzahl und Grösse
+  der Dateien im Gerätespeicher sind sichtbar. Die Gerätesperre (Windows-Anmeldung, BitLocker,
+  Handy-PIN) bleibt wichtig.
+- Eine Zugangssperre für die Webadresse selbst (Google-Konto oder E-Mail-Code) richtet
+  man bei Cloudflare unter «Zero Trust > Access» ein; siehe Übergabebericht.
+
+Daten und Speicherung
+---------------------
+- Projekte, Flächen und Einstellungen liegen im Browser-Speicher (localStorage), Originalunterlagen und
+  Suchtexte im Gerätespeicher (IndexedDB «lf-unterlagen», Version 2).
+- Scheitert das Speichern (Speicher voll oder gesperrt), zeigt die App «Nicht gespeichert» und
+  bietet sofort eine Sicherungsdatei zur Rettung an. Eine Datei oder ein Import wird dann nie als
+  erfolgreich gemeldet; der bisherige Stand bleibt unverändert.
+- Beschädigte gespeicherte Daten werden beim Start weder gelöscht noch überschrieben.
+- Das Datenformat 3 (Projekte) wird beim ersten Start von lf-v23 aus bestehenden Daten übernommen:
+  alle Flächen in ein Projekt «Bisheriges Projekt», Unterlagen ohne Fläche in den Eingang, Unterlagen der
+  Flächen bleiben bei ihrer Fläche. Nichts wird gelöscht oder verändert, Kennungen und Nachweise bleiben.
+  Eine ältere App-Version kann Daten im Format 3 nicht mehr öffnen.
+
+Dokumentauswertung
+------------------
+Text wird ausgelesen aus PDF (mit Textschicht, bis 500 Seiten; darüber wird der
+nicht geprüfte Rest ausdrücklich genannt), DOCX (Mammoth, lokal; bei einem Fehler der bisherige eigene Leser),
+XLSX (Zellen über ihre Bezüge, mit Blatt und Zeile als Herkunft), PPTX, ODT/ODS/ODP, TXT, CSV, MD. Fotos und
+Bilder werden per lokaler Texterkennung gelesen (nur Hinweise, siehe oben). Eingescannte PDFs und alte
+DOC/XLS-Dateien werden nur gespeichert.
+Verneinungen und offene Aussagen werden vor positiven Stichworten erkannt. Alle Aussagen
+eines Dokuments gehen in die Widerspruchsprüfung ein. Ein Metallwort allein entscheidet
+nicht über das Dachwasser (Beschichtung, Richtwert 50 m² über alle Kontaktflächen).
+Die App markiert Fundstellen, ersetzt aber keine Fachprüfung.
+
+Statusstufen
+------------
+laut Unterlage übernommen · vom Nutzer anhand der Unterlage als erfüllt markiert ·
+durch dokumentierten Fachnachweis bestätigt (Dokument, Seite und Prüfgegenstand nötig) ·
+offen · widersprüchlich · erneut zu prüfen · nicht erfüllt.
+Jede Erfassung hält ihre Grundlage fest (Flächen, Zielanlage, Quelle). Ändert sich diese
+oder wird die Quelle entfernt, ist der Prüfpunkt «erneut zu prüfen»; die frühere
+Erfassung bleibt als Historie sichtbar. Die App vergibt nie «ausführungsreif», höchstens
+«Alle Prüfpunkte dieser Checkliste erfasst».
+
+Installieren (nach einer Veröffentlichung)
+------------------------------------------
+Android/Chrome: Menü > «App installieren». iPhone/iPad/Safari: Teilen > «Zum
+Home-Bildschirm». Windows/Edge: Menü > Apps > «Diese Website als App installieren».
+Die Voraussetzungen einer installierbaren PWA sind erfüllt (Manifest mit start_url «./», scope «./»,
+display «standalone», Symbole 192/512 und maskable 512, Service Worker mit Offline-Start und versioniertem
+Cache). Auf dem iPhone gibt es keinen Installationsknopf; dort immer über «Teilen».
+Aktualisieren der Veröffentlichung (Cloudflare Pages): im Ordner mit der App-Kopie
+«npx wrangler@latest pages deploy public --project-name entsiegelung-kompass --branch main».
+(Für lf-v23 erst nach ausdrücklicher Freigabe; alle Dateien der Liste oben gehören dazu.)
